@@ -1,0 +1,6 @@
+BROKEN DAWN-Server Side Processors
+==================================
+
+game-proc - This is the C++ based program which enters a game loop and then processes the turn when all players have confirmed their moves.
+
+web-serv - This is the Erlang based server - it gets installed on a YAWS server and then servs out a RESTful API via http.
