@@ -1,0 +1,19 @@
+./game
+------
+
+This contains the main bulk of the code which does the processing. This is compiled into a lib***.a file. The reason for this is that it will be imported into both the main projects and the tests. This means that the same code is used in both (otherwise it wouldn't be a good test).
+
+./main
+------
+
+This contains the main daemon wrapper - it's essentially an import statement for the game library and then some code to make the daemon run. It handles pushing info into the logs about when certain functions are called but it's basically just the daemon - the reason there is so little here is because there's no easy way to test this - although I'm open to suggestions.
+
+./tests
+-------
+
+As the name belies this is the folder for the test projects. It uses the libraries built in the ./game folder and runs tests against them. There are also some tests against other things but this is mostly error checking that the environment is set up correctly.
+
+./libs
+------
+
+This folder automatically has the lib***.a files pushed into it so we know where to get them from. Nothing should ever be stored in here or pushed to the repo - it is a staging area for the build.
