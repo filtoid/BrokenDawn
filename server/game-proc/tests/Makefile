@@ -1,5 +1,7 @@
 all:
-	g++ main.cpp CouchDBTests.cpp -lcppunit -lcurlpp -o allTests.out
+	g++ main.cpp CouchDBTests.cpp UserTests.cpp -lcppunit -lcurlpp -o allTests.out
 
 clean:
-	rm *.out
+	rm -f *.out
+	rm -f *.*~
+	rm -f Make*~

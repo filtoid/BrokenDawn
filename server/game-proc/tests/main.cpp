@@ -1,4 +1,5 @@
 #include "./CouchDBTests.h"
+#include "./UserTests.h"
 
 #include <cppunit/TestCase.h>
 #include <cppunit/TestSuite.h>
@@ -32,7 +33,8 @@ int main (int argc, char **argv)
 	
 		// CouchDBTests
 		CouchDBTests::setup( suite );
-
+		// User Tests
+		UserTests::setup( suite );
 		
 		CppUnit::TextUi::TestRunner runner;
 		
