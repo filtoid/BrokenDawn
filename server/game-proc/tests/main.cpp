@@ -1,5 +1,6 @@
 #include "./CouchDBTests.h"
 #include "./UserTests.h"
+#include "./GameProcTests.h"
 
 #include <cppunit/TestCase.h>
 #include <cppunit/TestSuite.h>
@@ -35,7 +36,9 @@ int main (int argc, char **argv)
 		CouchDBTests::setup( suite );
 		// User Tests
 		UserTests::setup( suite );
-		
+		// Game-proc Tests
+		GameProcTests::setup( suite );
+
 		CppUnit::TextUi::TestRunner runner;
 		
 		// runner now owns this pointer (and will destroy it)
