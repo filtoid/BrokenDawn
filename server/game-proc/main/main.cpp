@@ -8,6 +8,8 @@
 #include <syslog.h>
 #include <string.h>
 
+#include "./bdgame.h"
+
 /*
 This is the main game loop - it is designed to run as daemon.
 The basic skeleton code has been taken from this excellent tutorial:
@@ -54,7 +56,7 @@ int main(void) {
         /* Change the current working directory */
         if ((chdir("/")) < 0) {
                 /* Log the failure */
-		syslog(LOG_ERR,"Broken Dawn - Failed to change dir to root\n");
+		syslog(LOG_ERR,"Broken Dawn Daemon - Failed to change dir to root\n");
 		closelog();
                 exit(EXIT_FAILURE);
         }
@@ -65,16 +67,22 @@ int main(void) {
         close(STDERR_FILENO);
         
         /* Daemon-specific initialization goes here */
- 	syslog(LOG_INFO,"Broken Dawn - Finished Initialization\n");       
+ 	syslog(LOG_INFO,"Broken Dawn Daemon- Finished Initialization\n");       
         /* The Big Loop */
-	while (1) {
-
-           /* Do some task here ... */
-	
+	bool bQuit = false; // This bool is part of a mammoth hack
+			    // where we can enter a db setting to
+			    // to the make the process exit - this
+			    // is mostly to allow for automation of
+			    // exiting rather than having to kill
+			    // the process. 
+	while (bQuit==false) {
+		
+           /* Do the game processing */
+	     
           
         }
 	
-	syslog(LOG_INFO, "Broken Dawn - Exiting Correctly\n");	
+	syslog(LOG_INFO, "Broken Dawn Daemon - Exiting Correctly\n");	
 	closelog();
 	exit(EXIT_SUCCESS);
 }
