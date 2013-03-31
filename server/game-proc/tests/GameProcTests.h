@@ -10,6 +10,8 @@ public:
 private:
 	static void CreateDatabase();
 	static void DeleteDatabase();
+	static void CreateUsers();
+	static void CreateGames();
 public:
 	GameProcTests();
 	~GameProcTests();
