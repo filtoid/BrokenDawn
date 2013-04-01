@@ -11,7 +11,8 @@ private:
 	static void CreateDatabase();
 	static void DeleteDatabase();
 	static void CreateUsers();
-	static void CreateGames();
+	static void CreateGames(int num);
+	
 public:
 	GameProcTests();
 	~GameProcTests();
@@ -20,4 +21,6 @@ public:
 	void testGetGame();
 	void testIsGameReady();
 	void testProcessGame();	
+private:
+	
 };

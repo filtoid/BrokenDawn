@@ -1,6 +1,7 @@
-#include "GameProcTests.h"
+#include "./GameProcTests.h"
 
 #include "BDGame.h"
+#include "BDUtils.h"
 
 #include <iostream>
 #include <string>
@@ -9,6 +10,10 @@
 #include <cppunit/ui/text/TestRunner.h>
 
 #include <curl/curl.h>
+
+// Vars to store the revision numbers of the table we have updated	
+static std::string gamesRev="";
+static std::string usersRev;
 
 using namespace std;
 
@@ -88,7 +93,7 @@ GameProcTests::~GameProcTests(){
 		cout<<"Failed to init curl" << endl;
 }
 
-/*static*/ void GameProcTests::CreateGames()
+/*static*/ void GameProcTests::CreateGames(int num)
 {
 	// Create the games doc in the test db
 	CURL *curl;
@@ -97,12 +102,48 @@ GameProcTests::~GameProcTests(){
 	if(curl) {	
 		/* HTTP PUT */ 
 		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "{\"games\": [\"Game1\",\"Game2\"]}");
+		ostringstream jsonStream;
+		jsonStream << "{";
+		
+		if(gamesRev.compare(""))
+			jsonStream << "\"_rev\":\""<< gamesRev << "\",";
+ 
+		jsonStream << "\"games\": ["; //"Game1\",\"Game2\"]}";
+		
+		for(int i=0;i<num;i++){
+			jsonStream << "\"Game" << i << "\"";
+			if(i!=num-1)
+				jsonStream<<",";						
+		}
+
+		jsonStream << "]}";
+		string json = jsonStream.str();
+		//cout << "json => " << json << endl;
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str());
  
 		/* specify URL for creating the test_db */ 
 		curl_easy_setopt(curl, CURLOPT_URL, "http://127.0.0.1:5984/test_db/bdgames");
-		 
+		
+		/*and the returned values*/
+		struct bdstring s;
+		s.len = 0;
+  		s.ptr = (char *)malloc(s.len+1);
+  		if (s.ptr == NULL) {
+    			fprintf(stderr, "malloc() failed\n");
+    			exit(EXIT_FAILURE);
+  		}
+  		s.ptr[0] = '\0';		
+		
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, BDUtils::curl_write );
+    		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+
 		CURLcode res = curl_easy_perform(curl);    
+		
+		std::string str(s.ptr);
+
+		gamesRev = BDUtils::getRevision(str);
+		//cout << "Games rev: " << gamesRev << endl;
+
 		if(res != CURLE_OK)
 			cout << "curl failure: " << curl_easy_strerror(res)<<endl;
 		 
@@ -147,7 +188,44 @@ void GameProcTests::testGetNumGames()
 	
 	GameProcTests::CreateDatabase();
 	GameProcTests::CreateUsers();
-	GameProcTests::CreateGames();
+	GameProcTests::CreateGames(2);
+
+	BDGame game;
+	int num = game.getNumOfGames();
+	
+	if(num!=2){
+		// Clear up before forcing fail
+		GameProcTests::DeleteDatabase();
+		ostringstream stream;
+		stream << "We have got the wrong number of games back: ";
+		stream << num;		
+		CPPUNIT_FAIL(stream.str()); 
+	}	
+
+	GameProcTests::CreateGames(3);
+
+	num = game.getNumOfGames();
+
+	if(num != 3){
+		// Clear up before forcing fail
+		GameProcTests::DeleteDatabase();
+		ostringstream stream;
+		stream << "We have got the wrong number of games back: ";
+		stream << num;		
+		CPPUNIT_FAIL(stream.str()); 		
+	}
+
+	GameProcTests::CreateGames(1);
+	num=game.getNumOfGames();
+
+	if(num != 1){
+		// Clear up before forcing fail
+		GameProcTests::DeleteDatabase();
+		ostringstream stream;
+		stream << "We have got the wrong number of games back: ";
+		stream << num;		
+		CPPUNIT_FAIL(stream.str()); 		
+	}
 
 	cout << "cleanup.";
 	// Reset everything just the way they were

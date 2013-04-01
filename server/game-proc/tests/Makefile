@@ -1,5 +1,5 @@
 all:
-	g++ main.cpp CouchDBTests.cpp UserTests.cpp GameProcTests.cpp -lcppunit -lcurlpp -L../libs -I../include -o allTests.out
+	g++ main.cpp CouchDBTests.cpp UserTests.cpp GameProcTests.cpp -lcppunit -lcurlpp -lbdgame -L../libs -I../include -o allTests.out
 
 clean:
 	rm -f *.out

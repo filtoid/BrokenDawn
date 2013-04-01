@@ -8,7 +8,7 @@
 #include <syslog.h>
 #include <string.h>
 
-#include "./bdgame.h"
+#include "./BDGame.h"
 
 /*
 This is the main game loop - it is designed to run as daemon.
