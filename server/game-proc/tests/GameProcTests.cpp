@@ -272,9 +272,9 @@ void GameProcTests::testGetGames()
 		string s( stream.str());
 		if(vecGames[i].compare(s)!=0){
 			cout << "Incorrect item found in vector: " << s;
-			CPPUNIT_FAIL("Incorrect item found in vector.");		
 			// Clear up before forcing fail
-			GameProcTests::DeleteDatabase();			
+			GameProcTests::DeleteDatabase();
+			CPPUNIT_FAIL("Incorrect item found in vector.");							
 		}	
 	}
 
