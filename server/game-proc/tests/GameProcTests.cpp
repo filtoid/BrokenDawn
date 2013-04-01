@@ -13,7 +13,7 @@
 
 // Vars to store the revision numbers of the table we have updated	
 static std::string gamesRev="";
-static std::string usersRev;
+static std::string usersRev="";
 
 using namespace std;
 
@@ -34,8 +34,8 @@ GameProcTests::~GameProcTests(){
 			"testGetNumGames",
 			&GameProcTests::testGetNumGames ) );
 	suite->addTest( new CppUnit::TestCaller<GameProcTests>(
-			"testGetGame",
-			&GameProcTests::testGetGame ) );
+			"testGetGames",
+			&GameProcTests::testGetGames ) );
 	suite->addTest( new CppUnit::TestCaller<GameProcTests>(
 			"testIsGameReady",
 			&GameProcTests::testIsGameReady ) );
@@ -70,6 +70,7 @@ GameProcTests::~GameProcTests(){
 		cout<<"Failed to init curl" << endl;
 
 }
+
 /*static*/ void GameProcTests::CreateUsers()
 {
 	// Create the users doc in the test db
@@ -108,7 +109,7 @@ GameProcTests::~GameProcTests(){
 		if(gamesRev.compare(""))
 			jsonStream << "\"_rev\":\""<< gamesRev << "\",";
  
-		jsonStream << "\"games\": ["; //"Game1\",\"Game2\"]}";
+		jsonStream << "\"games\": [";
 		
 		for(int i=0;i<num;i++){
 			jsonStream << "\"Game" << i << "\"";
@@ -138,15 +139,16 @@ GameProcTests::~GameProcTests(){
     		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
 
 		CURLcode res = curl_easy_perform(curl);    
-		
+		if(res != CURLE_OK){
+			cout << "curl failure: " << curl_easy_strerror(res)<<endl;
+			return;		
+		}
+
 		std::string str(s.ptr);
 
 		gamesRev = BDUtils::getRevision(str);
 		//cout << "Games rev: " << gamesRev << endl;
 
-		if(res != CURLE_OK)
-			cout << "curl failure: " << curl_easy_strerror(res)<<endl;
-		 
 		curl_easy_cleanup(curl);
 	}else
 		cout<<"Failed to init curl" << endl;
@@ -170,10 +172,14 @@ GameProcTests::~GameProcTests(){
 		/* Check for errors */ 
 		if(res != CURLE_OK)
 			cout << "curl error:" << curl_easy_strerror(res) << endl;
-		//fprintf(stderr, "curl_easy_perform() failed: %s\n",curl_easy_strerror(res));
 		 
 		curl_easy_cleanup(curl);
 	}
+	
+	// These revision numbers are no longer valid - because
+	// we've just deleted the database.
+	gamesRev = "";
+	usersRev = "";
 }
 
 /*Test methods*/
@@ -203,7 +209,6 @@ void GameProcTests::testGetNumGames()
 	}	
 
 	GameProcTests::CreateGames(3);
-
 	num = game.getNumOfGames();
 
 	if(num != 3){
@@ -234,9 +239,50 @@ void GameProcTests::testGetNumGames()
 	cout << "Passed\n";
 }
 
-void GameProcTests::testGetGame()
+void GameProcTests::testGetGames()
 {
+	cout << "Test get vector of games.";
+	// Setup
+	
+	cout << "init.";
 
+	// Do setup - set up couchDB etc
+	GameProcTests::CreateDatabase();
+	GameProcTests::CreateUsers();
+	GameProcTests::CreateGames(3);
+
+	BDGame game;
+	std::vector<std::string> vecGames = game.getVecOfGames();
+	
+	// See if we've got the right number back
+	if(vecGames.size()!=3){
+		// Clear up before forcing fail
+		cout<<"Wrong number of games retrieved from db";		
+		GameProcTests::DeleteDatabase();
+		ostringstream stream;
+		stream << "We have got the wrong number of games back: ";
+		stream << vecGames.size();		
+		CPPUNIT_FAIL(stream.str()); 
+	}	
+	
+	// Now check each one of the 3 to check they are the right game names
+	for(int i=0;i<vecGames.size();i++){
+		ostringstream stream;
+		stream << "Game" << i;
+		string s( stream.str());
+		if(vecGames[i].compare(s)!=0){
+			cout << "Incorrect item found in vector: " << s;
+			CPPUNIT_FAIL("Incorrect item found in vector.");		
+			// Clear up before forcing fail
+			GameProcTests::DeleteDatabase();			
+		}	
+	}
+
+	cout << "cleanup.";
+	// Reset everything just the way they were
+	GameProcTests::DeleteDatabase();
+
+	cout << "Passed\n";
 }
 
 void GameProcTests::testIsGameReady()

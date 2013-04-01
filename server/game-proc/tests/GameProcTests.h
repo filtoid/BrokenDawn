@@ -18,7 +18,7 @@ public:
 	~GameProcTests();
 
 	void testGetNumGames();
-	void testGetGame();
+	void testGetGames();
 	void testIsGameReady();
 	void testProcessGame();	
 private:

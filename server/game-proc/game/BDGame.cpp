@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <vector>
 
 using namespace std;
 
@@ -56,32 +57,51 @@ BDGame::BDGame()
 	return retString;	
 }
 
-int BDGame::getNumOfGames()
-{ 
-	//int[] retAry = new int[1];
-	//retAry[0] = "1";
+std::vector<std::string> BDGame::getVecOfGames()
+{
 	std::string gamesTable = BDGame::getItemFromDatabase("http://127.0.0.1:5984/test_db","bdgames");
-	//cout << "output: " << gamesTable;
+	gamesTable.substr(0,gamesTable.find("}")); // Scrub any uknown chars	
+	//cout << endl << "getVecOfGames: " << gamesTable;
+		
 	size_t start = gamesTable.find("\"games\"");
 	start = gamesTable.find("[")+1; // +1 to avoid the bracket
-	size_t end = gamesTable.find("]",start)-1; // -1 avoid the bracket
+	size_t end = gamesTable.find("]",start); // -1 avoid the bracket
 	
 	// start+1 to avoid the first square bracket
 	std::string gameList = gamesTable.substr(start,(end-start));
+	//cout << endl << "st:" << start << " en: " << end << "gamesList: " << gameList;
+
+	std::vector<std::string> retVec;
+ 
+	if(gameList.size()==0)
+		return retVec;
+
 	char chars[] = "[\"";
 	for (unsigned int i = 0; i < strlen(chars); ++i)
 		gameList.erase (std::remove(gameList.begin(), gameList.end(), chars[i]), gameList.end());	
 	
-  	int count = 0;
-  	for (int i = 0; i < gameList.size(); i++)
-    	{
-		// Count the number of commas (the seperation char)
-		if (gameList[i] == ',') 
-			count++;
+	size_t next = gameList.find(",");
+	while(gameList.find(",",next)!=-1){
+		next = gameList.find(",",next);
+		std::string nextStr = gameList.substr(0,next);
+		gameList = gameList.substr(next+1,gameList.size()-next); 	
+		retVec.push_back(nextStr);
 	}
-	count +=1 ; // Because the last item doesn't have a comma
+	
+	// Last item should be only thing left
+	retVec.push_back(gameList);
+	
+	// Debug to output - tests only - won't work in production
+	//for(int i=0; i<retVec.size();i++){
+	//	cout << i << ":" << retVec[i] << endl;		
+	//}
 
- 	return count;
+ 	return retVec;
+}
+
+int BDGame::getNumOfGames()
+{ 
+	return getVecOfGames().size();	
 }
 
 bool BDGame::isReadyToProcess(int id)
