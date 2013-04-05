@@ -6,12 +6,7 @@
 class GameProcTests : public CppUnit::TestFixture
 {
 public:
-	static void setup( CppUnit::TestSuite* suite);
-private:
-	static void CreateDatabase();
-	static void DeleteDatabase();
-	static void CreateUsers();
-	static void CreateGames(int num);
+	static void setup( CppUnit::TestSuite* suite );
 	
 public:
 	GameProcTests();
