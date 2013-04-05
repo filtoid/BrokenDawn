@@ -1,5 +1,7 @@
 #include "./BDGame.h"
 #include "./BDUtils.h"
+#include "./BDPlayer.h"
+
 #include <string>
 #include <curl/curl.h>
 #include <stdio.h>
@@ -10,10 +12,7 @@
 
 using namespace std;
 
-BDGame::BDGame()
-{
-
-}
+/*Static Declarations*/
 
 /*static*/ std::string BDGame::getItemFromDatabase(std::string db, std::string item)
 {
@@ -57,7 +56,7 @@ BDGame::BDGame()
 	return retString;	
 }
 
-std::vector<std::string> BDGame::getVecOfGames()
+/*static*/ std::vector<std::string> BDGame::getVecOfGames()
 {
 	std::string gamesTable = BDGame::getItemFromDatabase("http://127.0.0.1:5984/test_db","bdgames");
 	gamesTable.substr(0,gamesTable.find("}")); // Scrub any uknown chars	
@@ -99,17 +98,29 @@ std::vector<std::string> BDGame::getVecOfGames()
  	return retVec;
 }
 
-int BDGame::getNumOfGames()
+/*static*/ int BDGame::getNumOfGames()
 { 
 	return getVecOfGames().size();	
 }
 
-bool BDGame::isReadyToProcess(int id)
+/*static*/ bool BDGame::isReadyToProcess(int id)
 {
 	return false;
 }
 
-bool BDGame::process(int id)
+/*static*/bool BDGame::process(int id)
 {
 	return false;
+}
+
+/*Non-Static Members*/
+
+BDGame::BDGame(std::string gameID)
+{
+	// Load game from the Id we've been given
+}
+
+void BDGame::update()
+{
+	// Reload our settings and update anything we need to
 }
