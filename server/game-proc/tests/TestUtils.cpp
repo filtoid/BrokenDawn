@@ -215,12 +215,12 @@ static std::map<std::string,std::string> mapPlayerRev;
 		if(mapGameRev["name"]!="")
 			jsonStream << "\"_rev\":\""<< mapGameRev["name"] << "\",";
  
-		jsonStream << "\"players\": [ \"Player1\",\"Player2\"],\"turn\":26, ";
-		jsonStream << "\"ready\": [ \"no\",\"no\"], \"version\":0.1,\"Player1\":";
+		jsonStream << "\"players\": [\"Player1\",\"Player2\"],\"turn\":26, ";
+		jsonStream << "\"ready\": [\"no\",\"no\"], \"version\":0.1,\"Player1\":";
 		jsonStream << "\"player_game_1\",\"Player2\":\"player_game_2\"}";
 						
 		string json = jsonStream.str();
-		cout << "json => " << json << endl;
+		//cout << "json => " << json << endl;
 		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str());
  
 		/* specify URL for creating the test_db */

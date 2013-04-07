@@ -24,7 +24,7 @@ public:
 private:
 	void getGameFromJson( std::string json );
 	std::string id;
-	std::vector<BDPlayer*> vecPlayers;
+	std::vector<BDPlayer> vecPlayers;
 	float version;
 	int turn;
 };

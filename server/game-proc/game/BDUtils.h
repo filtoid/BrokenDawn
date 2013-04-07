@@ -25,7 +25,6 @@ public:
   		mem->memory = (char *)realloc(mem->memory, mem->size + realsize + 1);
   		if(mem->memory == NULL) {
     			/* out of memory! */ 
-    			//printf("not enough memory (realloc returned NULL)\n");
 			cout << "not enough memory (realloc returned NULL)\n";
     			return 0;
   		}
@@ -38,7 +37,7 @@ public:
 	}
 
 	static std::string getRevision( std::string in ){
-		//cout << in;
+		
 		size_t start = in.find("rev");
 		if(start==-1)
 			return "";

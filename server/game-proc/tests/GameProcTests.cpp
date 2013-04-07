@@ -164,15 +164,10 @@ void GameProcTests::testGetEachGame()
 		TestUtils::CreateInstanceOfGame(vecGamesStr[i]);
 	}
 
-	//std::vector<BDGame> vecGames;
-	cout << "Number of games: "<< vecGamesStr.size() << endl;
-
 	// Now check each one of the 3 to check they are the right game names
 	
 	for(int i=0;i<vecGamesStr.size();i++){
-		
-		cout << "Next Game: " << vecGamesStr[i] << i << endl;
-				
+						
 		BDGame game(vecGamesStr[i]);
 
 		// Get information from game and check against what we
@@ -185,9 +180,7 @@ void GameProcTests::testGetEachGame()
 		if(game.getNumPlayers()!=2){
 			cout<<"Failed to get the right number of players (" << game.getNumPlayers() << ")" << endl;
 			CPPUNIT_FAIL("Failed to get the right number of players");		
-		}
-		
-	//	vecGames.push_back(game);
+		}		
 	}
 
 	cout << "cleanup.";
