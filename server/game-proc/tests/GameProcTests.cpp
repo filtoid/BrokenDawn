@@ -41,6 +41,9 @@ GameProcTests::~GameProcTests(){
 	suite->addTest( new CppUnit::TestCaller<GameProcTests>(
 			"testProcessGame",
 			&GameProcTests::testProcessGame ) );
+	suite->addTest( new CppUnit::TestCaller<GameProcTests>(
+			"testGetEachGame",
+			&GameProcTests::testGetEachGame ) );	
 }
 
 /*Test methods*/
@@ -54,7 +57,6 @@ void GameProcTests::testGetNumGames()
 	// Do setup - set up couchDB etc
 	
 	TestUtils::CreateDatabase();
-	TestUtils::CreateUsers();
 	TestUtils::CreateGames(2);
 
 	int num = BDGame::getNumOfGames();
@@ -108,10 +110,9 @@ void GameProcTests::testGetGames()
 
 	// Do setup - set up couchDB etc
 	TestUtils::CreateDatabase();
-	TestUtils::CreateUsers();
 	TestUtils::CreateGames(3);
 
-	std::vector<std::string> vecGames = BDGame::getVecOfGames();
+	std::vector<std::string> vecGames(BDGame::getVecOfGames());
 	
 	// See if we've got the right number back
 	if(vecGames.size()!=3){
@@ -144,10 +145,60 @@ void GameProcTests::testGetGames()
 	cout << "Passed\n";
 }
 
+void GameProcTests::testGetEachGame()
+{
+	// Get the games that have been created
+	cout << "Test each game created and loads.";
+	// Setup
+	
+	cout << "init.";
+
+	// Do setup - set up couchDB etc
+	TestUtils::CreateDatabase();
+	TestUtils::CreateGames(3);
+	
+	std::vector<std::string> vecGamesStr(BDGame::getVecOfGames());
+
+	// Create the games	
+	for(int i=0;i<vecGamesStr.size();i++){
+		TestUtils::CreateInstanceOfGame(vecGamesStr[i]);
+	}
+
+	//std::vector<BDGame> vecGames;
+	cout << "Number of games: "<< vecGamesStr.size() << endl;
+
+	// Now check each one of the 3 to check they are the right game names
+	
+	for(int i=0;i<vecGamesStr.size();i++){
+		
+		cout << "Next Game: " << vecGamesStr[i] << i << endl;
+				
+		BDGame game(vecGamesStr[i]);
+
+		// Get information from game and check against what we
+		// created.
+		if(game.getVersion()!=0.1f){
+			cout<<"Failed to get the right version (" << game.getVersion() << ")" << endl;
+			CPPUNIT_FAIL("Failed to get the right version number");		
+		}
+		
+		if(game.getNumPlayers()!=2){
+			cout<<"Failed to get the right number of players (" << game.getNumPlayers() << ")" << endl;
+			CPPUNIT_FAIL("Failed to get the right number of players");		
+		}
+		
+	//	vecGames.push_back(game);
+	}
+
+	cout << "cleanup.";
+	// Reset everything just the way they were
+	TestUtils::DeleteDatabase();
+
+	cout << "Passed\n";
+}
+
 void GameProcTests::testIsGameReady()
 {
-	// Loop through and check to see if the all players
-	// have registered that they have finished their go
 	
 }
 

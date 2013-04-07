@@ -14,6 +14,7 @@ public:
 
 	void testGetNumGames();
 	void testGetGames();
+	void testGetEachGame();
 	void testIsGameReady();
 	void testProcessGame();	
 private:

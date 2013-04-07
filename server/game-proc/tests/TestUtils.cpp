@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <map>
 
 #include <curl/curl.h>
 
@@ -14,6 +15,8 @@ using namespace std;
 // Vars to store the revision numbers of the table we have updated	
 static std::string gamesRev="";
 static std::string usersRev="";
+static std::map<std::string,std::string> mapGameRev;
+static std::map<std::string,std::string> mapPlayerRev;
 
 /*static*/ void TestUtils::CreateDatabase()
 {
@@ -40,25 +43,66 @@ static std::string usersRev="";
 
 }
 
-/*static*/ void TestUtils::CreateUsers()
+/*static*/ void TestUtils::CreatePlayers(int num)
 {
-	// Create the users doc in the test db
+
+	// Create the players doc in the test db
 	CURL *curl;
  	curl = curl_easy_init();
   	
 	if(curl) {	
 		/* HTTP PUT */ 
 		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "{\"users\": [\"1stUser\",\"2ndUser\"]}");
+		ostringstream jsonStream;
+		jsonStream << "{";
+		
+		if(gamesRev.compare(""))
+			jsonStream << "\"_rev\":\""<< gamesRev << "\",";
+ 
+		jsonStream << "\"players\": [";
+		
+		for(int i=0;i<num;i++){
+			jsonStream << "\"Player" << i << "\"";
+			if(i!=num-1)
+				jsonStream<<",";						
+		}
+
+		jsonStream << "]}";
+		string json = jsonStream.str();
+		//cout << "json => " << json << endl;
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str());
  
 		/* specify URL for creating the test_db */ 
-		curl_easy_setopt(curl, CURLOPT_URL, "http://127.0.0.1:5984/test_db/bdusers");
-		 
+		curl_easy_setopt(curl, CURLOPT_URL, "http://127.0.0.1:5984/test_db/bdplayers");
+		
+		/*and the returned values*/
+		struct MemoryStruct chunk;
+ 
+  		chunk.memory = (char *)malloc(1);  /* will be grown as needed by the realloc above */ 
+  		chunk.size = 0;    /* no data at this point */ 	
+		
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, BDUtils::WriteMemoryCallback );
+    		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+
 		CURLcode res = curl_easy_perform(curl);    
-		if(res != CURLE_OK)
+		if(res != CURLE_OK){
 			cout << "curl failure: " << curl_easy_strerror(res)<<endl;
-		 
+			return;		
+		}
+
+		std::string str(chunk.memory);
+
+		gamesRev = BDUtils::getRevision(str);
+		//cout << "Games rev: " << gamesRev << endl;
+
 		curl_easy_cleanup(curl);
+		
+		for(int i=0;i<num;i++){
+			ostringstream stream;
+			stream << "Game" << i;
+			TestUtils::CreateInstanceOfGame(stream.str());
+		}	
+
 	}else
 		cout<<"Failed to init curl" << endl;
 }
@@ -95,17 +139,13 @@ static std::string usersRev="";
 		curl_easy_setopt(curl, CURLOPT_URL, "http://127.0.0.1:5984/test_db/bdgames");
 		
 		/*and the returned values*/
-		struct bdstring s;
-		s.len = 0;
-  		s.ptr = (char *)malloc(s.len+1);
-  		if (s.ptr == NULL) {
-    			fprintf(stderr, "malloc() failed\n");
-    			exit(EXIT_FAILURE);
-  		}
-  		s.ptr[0] = '\0';		
-		
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, BDUtils::curl_write );
-    		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+		struct MemoryStruct chunk;
+ 
+  		chunk.memory = (char *)malloc(1);  /* will be grown as needed by the realloc above */ 
+  		chunk.size = 0;    /* no data at this point */ 	
+
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, BDUtils::WriteMemoryCallback );
+    		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
 		CURLcode res = curl_easy_perform(curl);    
 		if(res != CURLE_OK){
@@ -113,12 +153,19 @@ static std::string usersRev="";
 			return;		
 		}
 
-		std::string str(s.ptr);
+		std::string str(chunk.memory);
 
 		gamesRev = BDUtils::getRevision(str);
 		//cout << "Games rev: " << gamesRev << endl;
 
 		curl_easy_cleanup(curl);
+		
+		for(int i=0;i<num;i++){
+			ostringstream stream;
+			stream << "Game" << i;
+			TestUtils::CreateInstanceOfGame(stream.str());
+		}	
+
 	}else
 		cout<<"Failed to init curl" << endl;
 }
@@ -149,6 +196,116 @@ static std::string usersRev="";
 	// we've just deleted the database.
 	gamesRev = "";
 	usersRev = "";
+	mapGameRev.clear();
+	
 }
 
+/*static*/ void TestUtils::CreateInstanceOfGame( std::string name )
+{
+	// Create the default game details
+	CURL *curl;
+ 	curl = curl_easy_init();
+  	
+	if(curl) {	
+		/* HTTP PUT */ 
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
+		ostringstream jsonStream;
+		jsonStream << "{";
+		
+		if(mapGameRev["name"]!="")
+			jsonStream << "\"_rev\":\""<< mapGameRev["name"] << "\",";
+ 
+		jsonStream << "\"players\": [ \"Player1\",\"Player2\"],\"turn\":26, ";
+		jsonStream << "\"ready\": [ \"no\",\"no\"], \"version\":0.1,\"Player1\":";
+		jsonStream << "\"player_game_1\",\"Player2\":\"player_game_2\"}";
+						
+		string json = jsonStream.str();
+		cout << "json => " << json << endl;
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str());
+ 
+		/* specify URL for creating the test_db */
+		ostringstream urlstream;
+		urlstream << "http://127.0.0.1:5984/test_db/" << name;
+		curl_easy_setopt(curl, CURLOPT_URL, urlstream.str().c_str() );
+		
+		/*and the returned values*/
+		struct MemoryStruct chunk;
+ 
+  		chunk.memory = (char *)malloc(1);  /* will be grown as needed by the realloc above */ 
+  		chunk.size = 0;    /* no data at this point */ 			
+		
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, BDUtils::WriteMemoryCallback );
+    		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+
+		CURLcode res = curl_easy_perform(curl);    
+		if(res != CURLE_OK){
+			cout << "curl failure: " << curl_easy_strerror(res)<<endl;
+			return;		
+		}
+
+		std::string str(chunk.memory);
+
+		mapGameRev["name"] = BDUtils::getRevision(str);
+		//cout << "Games rev: " << gamesRev << endl;
+
+		curl_easy_cleanup(curl);
+	}else
+		cout<<"Failed to init curl" << endl;
+}
+
+
+/*static*/ void CreateInstanceOfUser( std::string name )
+{
+	// Create the default player details
+	CURL *curl;
+ 	curl = curl_easy_init();
+  	
+	if(curl) {	
+		/* HTTP PUT */ 
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
+		ostringstream jsonStream;
+		jsonStream << "{";
+		
+		if(mapPlayerRev["name"]!="")
+			jsonStream << "\"_rev\":\""<< mapPlayerRev["name"] << "\",";
+ 
+		jsonStream << "\"name\": \"" << name << "\",\"email\":\"someone@somewhere.com\", ";
+		jsonStream << "\"state\":\"WAITING\",";
+		jsonStream << "\"games\": [ \"Game1\",\"Game2\"], \"version\":0.1,\"Game1\":";
+		jsonStream << "\"player_game_1\",\"Game2\":\"player_game_2\"}";
+						
+		string json = jsonStream.str();
+		cout << "json => " << json << endl;
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str());
+ 
+		/* specify URL for creating the test_db */
+		ostringstream urlstream;
+		urlstream << "http://127.0.0.1:5984/test_db/" << name;
+		curl_easy_setopt(curl, CURLOPT_URL, urlstream.str().c_str() );
+		
+		/*and the returned values*/
+		struct MemoryStruct chunk;
+ 
+  		chunk.memory = (char *)malloc(1);  /* will be grown as needed by the realloc above */ 
+  		chunk.size = 0;    /* no data at this point */ 			
+		
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, BDUtils::WriteMemoryCallback );
+    		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+
+		CURLcode res = curl_easy_perform(curl);    
+		if(res != CURLE_OK){
+			cout << "curl failure: " << curl_easy_strerror(res)<<endl;
+			return;		
+		}
+
+		std::string str(chunk.memory);
+
+		mapPlayerRev["name"] = BDUtils::getRevision(str);
+		//cout << "Games rev: " << gamesRev << endl;
+
+		curl_easy_cleanup(curl);
+	}else
+		cout<<"Failed to init curl" << endl;
+
+}
 

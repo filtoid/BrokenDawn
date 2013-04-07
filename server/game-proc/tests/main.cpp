@@ -1,6 +1,7 @@
 #include "./CouchDBTests.h"
 #include "./UserTests.h"
 #include "./GameProcTests.h"
+#include "./UtilTests.h"
 
 #include <cppunit/TestCase.h>
 #include <cppunit/TestSuite.h>
@@ -38,6 +39,8 @@ int main (int argc, char **argv)
 		UserTests::setup( suite );
 		// Game-proc Tests
 		GameProcTests::setup( suite );
+		// Util Tests
+		UtilTests::setup( suite );
 
 		CppUnit::TextUi::TestRunner runner;
 		

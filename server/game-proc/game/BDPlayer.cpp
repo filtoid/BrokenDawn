@@ -21,7 +21,8 @@
 
 /*Non-static methods*/
 
-BDPlayer::BDPlayer(std::string id)
+BDPlayer::BDPlayer(std::string pid)
+:	id(pid)
 {
 	// Load from database with the given id
 }

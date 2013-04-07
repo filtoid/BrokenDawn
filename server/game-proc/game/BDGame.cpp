@@ -21,35 +21,39 @@ using namespace std;
 	CURL *curl;
  	curl = curl_easy_init();
   	
+	cout << "Finding item: " << item << endl;
+
 	if(curl) {	
 		std::ostringstream stringStream;
 		stringStream <<  db << "/" << item;
   		std::string url = stringStream.str();
 		
+		cout << "...from url " << url;
+	
 		/* HTTP GET */ 
 		curl_easy_setopt(curl, CURLOPT_URL, (char*)url.c_str());
-	 	struct bdstring s;  // Make the structure for the return value
-	 	s.len = 0;
-  		s.ptr = (char *)malloc(s.len+1);
-  		if (s.ptr == NULL) {
-			cout<< "malloc() failed";    			
-			fprintf(stderr, "malloc() failed\n");
-			exit(EXIT_FAILURE);
-  		}
-  		s.ptr[0] = '\0';
-
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, BDUtils::curl_write );
-    		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
-
+	 	
+  		struct MemoryStruct chunk;
+ 
+  		chunk.memory = (char *)malloc(1);  /* will be grown as needed by the realloc above */ 
+  		chunk.size = 0;    /* no data at this point */ 	
+		
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, BDUtils::WriteMemoryCallback );
+    		curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
+		cout << "About to easy perform" << endl;
 		CURLcode res = curl_easy_perform(curl);  
+		cout << "Returned from easy perform" <<endl;
+
 		if(res != CURLE_OK)
 			cout << "curl failure: " << curl_easy_strerror(res)<<endl;
 		
 		// Now copy the output to the return value
-		std::string str(s.ptr);
+		std::string str(chunk.memory);
 		retString = str;
-  
+  		cout << retString << " <= From func" << endl;
 		curl_easy_cleanup(curl);
+		cout << "Return from cleanup" << endl;
+
 	}else
 		cout<<"Failed to init curl" << endl;
 
@@ -115,12 +119,64 @@ using namespace std;
 
 /*Non-Static Members*/
 
+void BDGame::getGameFromJson( std::string json )
+{		
+	//size_t start = json.find("\"players\"");
+	//start = json.find("[")+1; // +1 to avoid the bracket
+	//size_t end = json.find("]",start); // -1 avoid the bracket
+	std::string playersStr = BDUtils::getItemFromJson(json,"players");
+	std::cout << "Returned from utils: " << playersStr;
+	
+	std::vector<std::string> players = BDUtils::getVecFromAry(playersStr);
+	cout << "Size of players: " << players.size()<<endl;	
+	for(int i=0;i<players.size();i++)
+	{
+		cout << "Next one: " << players[i] << endl;
+		BDPlayer* player = new BDPlayer(players[i]);
+		vecPlayers.push_back(player);
+	}
+
+	cout <<"Finished"<<endl;
+
+	std::string versionstr = BDUtils::getItemFromJson(json,"version");
+	float vernum( atof(versionstr.c_str() ) );	
+	this->version = vernum;
+}
+
 BDGame::BDGame(std::string gameID)
 {
+	cout << "Makin new game: " << gameID  << endl;
 	// Load game from the Id we've been given
+	std::string gameJson = BDGame::getItemFromDatabase("http://127.0.0.1:5984/test_db",gameID);
+	//cout << "Output" << gameJson;
+	getGameFromJson(gameJson);
+}
+
+BDGame::~BDGame()
+{
+	/*for(int i=0;i<vecPlayers.size();i++)
+	{
+		delete vecPlayers[i];
+		vecPlayers[i]=NULL;
+	}*/
 }
 
 void BDGame::update()
 {
 	// Reload our settings and update anything we need to
 }
+
+int BDGame::getNumPlayers()
+{
+	return vecPlayers.size();
+}
+
+float BDGame::getVersion()
+{
+	return version;
+}
+	
+int BDGame::getTurn()
+{
+	return turn;
+}	
