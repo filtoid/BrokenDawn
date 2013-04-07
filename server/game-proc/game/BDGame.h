@@ -6,6 +6,13 @@ class BDPlayer;
 class BDGame 
 {
 public:
+	enum enGameState{
+		GS_LOADING=0,
+		GS_WAITING,
+		GS_PROCESSING,
+		GS_ERROR	
+	};
+
 	static int getNumOfGames();
 	static std::vector<std::string> getVecOfGames();
 	static bool isReadyToProcess(int id);
@@ -25,6 +32,8 @@ private:
 	void getGameFromJson( std::string json );
 	std::string id;
 	std::vector<BDPlayer> vecPlayers;
+	std::vector<bool> vecReady;
 	float version;
 	int turn;
+	enGameState state;
 };

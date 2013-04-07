@@ -124,6 +124,7 @@ public:
 		return retVec;
 	}
 
+	static std::string getItemFromDatabase(std::string db, std::string item);
 public:
 	//static std::string 
 	void BDUTils(){}

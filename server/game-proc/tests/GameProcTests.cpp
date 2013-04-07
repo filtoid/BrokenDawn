@@ -180,7 +180,13 @@ void GameProcTests::testGetEachGame()
 		if(game.getNumPlayers()!=2){
 			cout<<"Failed to get the right number of players (" << game.getNumPlayers() << ")" << endl;
 			CPPUNIT_FAIL("Failed to get the right number of players");		
-		}		
+		}	
+		
+		if(game.getTurn()!=26){
+			cout<<"Failed to get the right turn number (" << game.getTurn() << ")" << endl;
+			CPPUNIT_FAIL("Failed to get the right number of players");		
+		}
+	
 	}
 
 	cout << "cleanup.";
