@@ -18,17 +18,9 @@ class UserTests : public CppUnit::TestFixture
 public:
 	static void setup( CppUnit::TestSuite* suite);
 	
-	static void createUsersAandB();
-        static void deleteUsersAandB();
-
-private:
-	static void createUserA();
-	static void createUserB();
-	static void deleteUserA();
-	static void deleteUserB();
-
 public:
-	UserTests(){}
-	void testCreateUsers();
+	UserTests();
+	~UserTests();
+	void testGetNumUsers();
 };
 

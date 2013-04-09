@@ -1,4 +1,6 @@
 #include "UserTests.h"
+#include "BDPlayer.h"
+#include "TestUtils.h"
 
 #include <iostream>
 #include <string>
@@ -16,50 +18,70 @@ using namespace std;
 {
 	// Add all of our tests
 	suite->addTest( new CppUnit::TestCaller<UserTests>(
-			"testCreateUsers",
-			&UserTests::testCreateUsers ) );
+			"testGetNumUsers",
+			&UserTests::testGetNumUsers ) );
 }
 
-void UserTests::testCreateUsers()
+/*Non-static members*/
+
+UserTests::UserTests()
 {
-	cout << "Test to check that we can create a user within CouchDB...";
+	// Do the curl global setup
+  	curl_global_init(CURL_GLOBAL_ALL);
+}
+
+UserTests::~UserTests()
+{
+	// Do the curl global cleanup
+  	curl_global_cleanup();
+}
+
+void UserTests::testGetNumUsers()
+{
+	cout << "Test get number of players...";
+	cout << "init.";
+	// Do setup - set up couchDB etc
 	
+	TestUtils::CreateDatabase();
+	TestUtils::CreatePlayers(2);
+
+	int num = BDPlayer::getNumOfPlayers();
+	
+	if(num!=2){
+		// Clear up before forcing fail
+		TestUtils::DeleteDatabase();
+		ostringstream stream;
+		stream << "We have got the wrong number of games back: ";
+		stream << num;		
+		CPPUNIT_FAIL(stream.str()); 
+	}	
+
+	TestUtils::CreatePlayers(3);
+	num = BDPlayer::getNumOfPlayers();
+
+	if(num != 3){
+		// Clear up before forcing fail
+		TestUtils::DeleteDatabase();
+		ostringstream stream;
+		stream << "We have got the wrong number of games back: ";
+		stream << num;		
+		CPPUNIT_FAIL(stream.str()); 		
+	}
+
+	TestUtils::CreatePlayers(1);
+	num= BDPlayer::getNumOfPlayers();
+
+	if(num != 1){
+		// Clear up before forcing fail
+		TestUtils::DeleteDatabase();
+		ostringstream stream;
+		stream << "We have got the wrong number of games back: ";
+		stream << num;		
+		CPPUNIT_FAIL(stream.str()); 		
+	}
+
 	// Make sure that the private functions createUserA and createUserB 
 	// are working correctly. They are used by other tests
 	cout << "Passed\n";
 }
 
-
-/*static*/ void UserTests::createUserA()
-{
-	// Create a user called 'user_A'
-}
-
-/*static*/ void UserTests::createUserB()
-{
-	// Create a user called 'user_B'
-}
-
-/*static*/ void UserTests::deleteUserA()
-{
-	// Delete user A
-}
-
-/*static*/ void UserTests::deleteUserB()
-{
-	// Delete user B
-}
-
-/*static*/ void UserTests::createUsersAandB()
-{
-	// Create users A and B
-	UserTests::createUserA();
-	UserTests::createUserB();
-}
-
-/*static*/ void UserTests::deleteUsersAandB()
-{
-	// Delete users A and B
-	UserTests::deleteUserA();
-	UserTests::deleteUserB();
-}
