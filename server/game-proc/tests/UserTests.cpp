@@ -20,6 +20,9 @@ using namespace std;
 	suite->addTest( new CppUnit::TestCaller<UserTests>(
 			"testGetNumUsers",
 			&UserTests::testGetNumUsers ) );
+	suite->addTest( new CppUnit::TestCaller<UserTests>(
+			"testGetPlayers",
+			&UserTests::testGetPlayers ) );			
 }
 
 /*Non-static members*/
@@ -85,3 +88,47 @@ void UserTests::testGetNumUsers()
 	cout << "Passed\n";
 }
 
+void UserTests::testGetPlayers()
+{
+	cout << "Test get vector of players.";
+	// Setup
+	
+	cout << "init.";
+
+	// Do setup - set up couchDB etc
+	TestUtils::CreateDatabase();
+	TestUtils::CreatePlayers(3);
+
+	std::vector<std::string> vecPlayers(BDPlayer::getVecOfPlayers());
+	
+	// See if we've got the right number back
+	if(vecPlayers.size()!=3){
+		// Clear up before forcing fail
+		cout<<"Wrong number of players retrieved from db";		
+		TestUtils::DeleteDatabase();
+		ostringstream stream;
+		stream << "We have got the wrong number of players back: ";
+		stream << vecPlayers.size();		
+		CPPUNIT_FAIL(stream.str()); 
+	}	
+	
+	// Now check each one of the 3 to check they are the right game names
+	for(int i=0;i<vecPlayers.size();i++){
+		ostringstream stream;
+		stream << "Player" << i;
+		string s( stream.str());
+		if(vecPlayers[i].compare(s)!=0){
+			cout << "Incorrect item found in vector: " << s;
+			// Clear up before forcing fail
+			TestUtils::DeleteDatabase();
+			CPPUNIT_FAIL("Incorrect item found in vector.");							
+		}	
+	}
+
+	cout << "cleanup.";
+	// Reset everything just the way they were
+	TestUtils::DeleteDatabase();
+
+	cout << "Passed\n";
+
+}

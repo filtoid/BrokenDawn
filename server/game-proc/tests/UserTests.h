@@ -22,5 +22,6 @@ public:
 	UserTests();
 	~UserTests();
 	void testGetNumUsers();
+	void testGetPlayers();
 };
 
