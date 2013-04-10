@@ -100,14 +100,14 @@ static std::map<std::string,std::string> mapPlayerRev;
 		for(int i=0;i<num;i++){
 			ostringstream stream;
 			stream << "Game" << i;
-			TestUtils::CreateInstanceOfGame(stream.str());
+			TestUtils::CreateInstanceOfGame(stream.str(),false);
 		}	
 
 	}else
 		cout<<"Failed to init curl" << endl;
 }
 
-/*static*/ void TestUtils::CreateGames(int num)
+/*static*/ void TestUtils::CreateGames(int num, bool bCreateInstance/*=true*/)
 {
 	// Create the games doc in the test db
 	CURL *curl;
@@ -160,10 +160,10 @@ static std::map<std::string,std::string> mapPlayerRev;
 
 		curl_easy_cleanup(curl);
 		
-		for(int i=0;i<num;i++){
+		for(int i=0;i<num && bCreateInstance;i++){
 			ostringstream stream;
 			stream << "Game" << i;
-			TestUtils::CreateInstanceOfGame(stream.str());
+			TestUtils::CreateInstanceOfGame(stream.str(),false);
 		}	
 
 	}else
@@ -181,7 +181,7 @@ static std::map<std::string,std::string> mapPlayerRev;
 		/* HTTP DELETE is a custom request */ 
 		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE"); 
 		/* use local couchdb*/
-		curl_easy_setopt(curl, CURLOPT_URL,  "http://127.0.0.1:5984/test_db");
+		curl_easy_setopt(curl, CURLOPT_URL,  "http://127.0.0.1:5984/test_db/");
 		 
 		CURLcode res = curl_easy_perform(curl);
 		    
@@ -200,7 +200,7 @@ static std::map<std::string,std::string> mapPlayerRev;
 	
 }
 
-/*static*/ void TestUtils::CreateInstanceOfGame( std::string name )
+/*static*/ void TestUtils::CreateInstanceOfGame( std::string name, bool allPlayersReady /*=false*/ )
 {
 	// Create the default game details
 	CURL *curl;
@@ -216,7 +216,12 @@ static std::map<std::string,std::string> mapPlayerRev;
 			jsonStream << "\"_rev\":\""<< mapGameRev["name"] << "\",";
  
 		jsonStream << "\"players\": [\"Player1\",\"Player2\"],\"turn\":26, ";
-		jsonStream << "\"ready\": [\"no\",\"no\"], \"version\":0.1,\"Player1\":";
+		
+		if(allPlayersReady)
+			jsonStream << "\"ready\": [\"yes\",\"yes\"], \"version\":0.1,\"Player1\":";
+		else
+			jsonStream << "\"ready\": [\"no\",\"no\"], \"version\":0.1,\"Player1\":";
+		
 		jsonStream << "\"player_game_1\",\"Player2\":\"player_game_2\"}";
 						
 		string json = jsonStream.str();

@@ -82,6 +82,8 @@ void UserTests::testGetNumUsers()
 		stream << num;		
 		CPPUNIT_FAIL(stream.str()); 		
 	}
+	cout << "Cleanup\n";
+	TestUtils::DeleteDatabase();
 
 	// Make sure that the private functions createUserA and createUserB 
 	// are working correctly. They are used by other tests
@@ -97,6 +99,7 @@ void UserTests::testGetPlayers()
 
 	// Do setup - set up couchDB etc
 	TestUtils::CreateDatabase();
+	cout << "Creating players";
 	TestUtils::CreatePlayers(3);
 
 	std::vector<std::string> vecPlayers(BDPlayer::getVecOfPlayers());

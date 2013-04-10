@@ -56,14 +56,20 @@ void BDGame::getGameFromJson( std::string json )
 		vecPlayers.push_back(player);
 	}
 	
-	// Get player ready value
+	// Get player ready value...
 	std::string readyStr = BDUtils::getItemFromJson(json,"ready");
 	std::vector<std::string> readyVec = BDUtils::getVecFromAry(readyStr);
 	for(int i=0;i<readyVec.size();i++){
-		if(readyVec[i].compare("yes"))
+		if(readyVec[i].compare("yes")==0)
 			vecReady.push_back(true);
 		else
 			vecReady.push_back(false);	
+	}
+	// ... and push to our map.
+	for(int i=0;i<players.size();i++)
+	{
+		std::string playerName = vecPlayers[i].getId();
+		mapPlayerReady[playerName] = vecReady[i];
 	}
 
 	// Version number
@@ -90,6 +96,16 @@ BDGame::~BDGame()
 void BDGame::update()
 {
 	// Reload our settings and update anything we need to
+}
+
+bool BDGame::areAllPlayersReady()
+{
+	for(int i=0;i<vecPlayers.size();i++){
+		std::string playerName = vecPlayers[i].getId();
+		if(mapPlayerReady[playerName]==false)
+			return false;	
+	}
+	return true;
 }
 
 int BDGame::getNumPlayers()

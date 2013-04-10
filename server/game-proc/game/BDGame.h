@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <map>
 
 class BDPlayer;
 
@@ -27,11 +28,12 @@ public:
 	int getNumPlayers();
 	float getVersion();
 	int getTurn();
-	
+	bool areAllPlayersReady();
 private:
 	void getGameFromJson( std::string json );
 	std::string id;
 	std::vector<BDPlayer> vecPlayers;
+	std::map<std::string,bool> mapPlayerReady;
 	std::vector<bool> vecReady;
 	float version;
 	int turn;

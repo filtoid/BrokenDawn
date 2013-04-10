@@ -11,7 +11,7 @@ public:
 
 	static void CreatePlayers(int num);
 	static void CreateInstanceOfPlayer( std::string name );
-	static void CreateGames(int num);
-	static void CreateInstanceOfGame( std::string name );
+	static void CreateGames(int num,bool bCreateInstance =true );
+	static void CreateInstanceOfGame( std::string name, bool allPlayersReady = false);
 
 };

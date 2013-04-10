@@ -159,11 +159,6 @@ void GameProcTests::testGetEachGame()
 	
 	std::vector<std::string> vecGamesStr(BDGame::getVecOfGames());
 
-	// Create the games	
-	for(int i=0;i<vecGamesStr.size();i++){
-		TestUtils::CreateInstanceOfGame(vecGamesStr[i]);
-	}
-
 	// Now check each one of the 3 to check they are the right game names
 	
 	for(int i=0;i<vecGamesStr.size();i++){
@@ -198,7 +193,40 @@ void GameProcTests::testGetEachGame()
 
 void GameProcTests::testIsGameReady()
 {
+
+	cout << "Test if the games are ready for processing.";
+	cout << ".init";
+	TestUtils::CreateDatabase();
+	TestUtils::CreateGames(2,false); // Create games but not instances - we will do that below
 	
+	std::vector<std::string> vecGamesStr(BDGame::getVecOfGames());
+
+	// Create the game
+	TestUtils::CreateInstanceOfGame(vecGamesStr[0],false);
+	TestUtils::CreateInstanceOfGame(vecGamesStr[1],true);
+	
+	{
+		BDGame game(vecGamesStr[0]);
+		if(game.areAllPlayersReady()!=false){
+			TestUtils::DeleteDatabase();		
+			CPPUNIT_FAIL("The game reported it was ready when in fact it was not");	
+		}
+	}
+
+	{
+		BDGame game(vecGamesStr[1]);
+		if(game.areAllPlayersReady()!=true){
+			TestUtils::DeleteDatabase();
+			CPPUNIT_FAIL("The game reported it was not ready when in fact it was");	
+		}
+	}
+
+
+	cout << "cleanup.";
+	// Reset everything just the way they were
+	TestUtils::DeleteDatabase();
+
+	cout << "Passed\n";
 }
 
 void GameProcTests::testProcessGame()
